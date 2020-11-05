@@ -73,20 +73,21 @@ export class ExtensionLoader {
   protected autoInitExtensions(register: (ext: LensExtension) => Function[]) {
     return reaction(() => this.extensions.toJS(), (installedExtensions) => {
       for (const [id, ext] of installedExtensions) {
-        let instance = this.instances.get(ext.manifestPath)
-        if (!instance) {
-          const extensionModule = this.requireExtension(ext)
-          if (!extensionModule) {
-            continue
-          }
-          try {
-            const LensExtensionClass: LensExtensionConstructor = extensionModule.default;
-            instance = new LensExtensionClass(ext);
-            instance.whenEnabled(() => register(instance));
-            this.instances.set(ext.manifestPath, instance);
-          } catch (err) {
-            logger.error(`[EXTENSIONS-LOADER]: init extension instance error`, { ext, err })
-          }
+        if (this.instances.has(id)) {
+          continue
+        }
+
+        const extensionModule = this.requireExtension(ext)
+        if (!extensionModule) {
+          continue
+        }
+
+        const instance: LensExtensionConstructor = new extensionModule.default({ ...ext.manifest, manifestPath: ext.manifestPath, id: ext.manifestPath }, ext.manifest);
+        try {
+          instance.whenEnabled(() => register(instance));
+          this.instances.set(ext.manifestPath, instance);
+        } catch (err) {
+          logger.error(`[EXTENSIONS-LOADER]: init extension instance error`, { ext, err })
         }
       }
     }, {
