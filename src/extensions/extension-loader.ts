@@ -82,8 +82,8 @@ export class ExtensionLoader {
           continue
         }
 
-        const instance: LensExtensionConstructor = new extensionModule.default({ ...ext.manifest, manifestPath: ext.manifestPath, id: ext.manifestPath }, ext.manifest);
         try {
+          const instance = new extensionModule.default(ext);
           instance.whenEnabled(() => register(instance));
           this.instances.set(ext.manifestPath, instance);
         } catch (err) {
@@ -95,7 +95,7 @@ export class ExtensionLoader {
     })
   }
 
-  protected requireExtension(extension: InstalledExtension) {
+  protected requireExtension(extension: InstalledExtension): { default: LensExtensionConstructor } {
     let extEntrypoint = ""
     try {
       if (ipcRenderer && extension.manifest.renderer) {
@@ -104,7 +104,7 @@ export class ExtensionLoader {
         extEntrypoint = path.resolve(path.join(path.dirname(extension.manifestPath), extension.manifest.main))
       }
       if (extEntrypoint !== "") {
-        return __non_webpack_require__(extEntrypoint)
+        return __non_webpack_require__(extEntrypoint).default
       }
     } catch (err) {
       console.error(`[EXTENSION-LOADER]: can't load extension main at ${extEntrypoint}: ${err}`, { extension });
