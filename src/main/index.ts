@@ -21,6 +21,7 @@ import { userStore } from "../common/user-store";
 import { workspaceStore } from "../common/workspace-store";
 import { appEventBus } from "../common/event-bus"
 import { extensionLoader } from "../extensions/extension-loader";
+import { filesystemProvisionerStore } from "./extension-filesystem";
 
 const workingDir = path.join(app.getPath("appData"), appName);
 let proxyPort: number;
@@ -52,6 +53,7 @@ app.on("ready", async () => {
     userStore.load(),
     clusterStore.load(),
     workspaceStore.load(),
+    filesystemProvisionerStore.load(),
   ]);
 
   // find free port

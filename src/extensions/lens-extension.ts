@@ -1,5 +1,6 @@
 import type { InstalledExtension } from "./extension-manager";
-import { action, reaction } from "mobx";
+import { action, reaction, observable, toJS } from "mobx";
+import { filesystemProvisionerStore } from "../main/extension-filesystem";
 import logger from "../main/logger";
 import { ExtensionStore } from "./extension-store";
 
@@ -55,6 +56,21 @@ export class LensExtension<S extends ExtensionStore<LensExtensionStoreModel> = a
 
   get version() {
     return this.manifest.version
+  }
+
+  /**
+   * getExtensionFileFolder returns the path to an already created folder. This
+   * folder is for the sole use of this extension.
+   *
+   * Note: there is no security done on this folder, only obfiscation of the
+   * folder name.
+   */
+  async getExtensionFileFolder(): Promise<string> {
+    return filesystemProvisionerStore.requestDirectory(this.id)
+  }
+
+  async migrate(appVersion: string) {
+    // mock
   }
 
   get description() {
@@ -121,6 +137,16 @@ function createBaseStore() {
       super({
         configName: "state"
       });
+    }
+
+    protected fromStore(data: LensExtensionStoreModel): void {
+      if (data) {
+        this.data = data
+      }
+    }
+
+    toJSON(): LensExtensionStoreModel {
+      return toJS(this.data, { recurseEverything: true })
     }
   }
 }
