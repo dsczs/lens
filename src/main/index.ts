@@ -5,7 +5,7 @@ import "../common/prometheus-providers"
 import * as Mobx from "mobx"
 import * as LensExtensions from "../extensions/core-api";
 import { app, dialog } from "electron"
-import { appName } from "../common/vars";
+import { appName, isTestEnv } from "../common/vars";
 import path from "path"
 import { LensProxy } from "./lens-proxy"
 import { WindowManager } from "./window-manager";
@@ -22,6 +22,11 @@ import { workspaceStore } from "../common/workspace-store";
 import { appEventBus } from "../common/event-bus"
 import { extensionLoader } from "../extensions/extension-loader";
 import { filesystemProvisionerStore } from "./extension-filesystem";
+import packageInfo from "../../package.json"
+
+if (isTestEnv) {
+  packageInfo.lens.extensions.push("example-extension")
+}
 
 const workingDir = path.join(app.getPath("appData"), appName);
 let proxyPort: number;
